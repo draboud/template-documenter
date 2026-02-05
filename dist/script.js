@@ -1,6 +1,6 @@
 (() => {
   // script.js
-  console.log("Template-Documenter-Feb 5, 2026...Test-1");
+  console.log("Template-Documenter-Feb 5, 2026...Test-3");
   var allChapterWrappers = document.querySelectorAll(".chapter-wrapper");
   var allSubChapterWrappers = document.querySelectorAll(".sub-chapter-wrapper");
   var allNavBtns = document.querySelectorAll(".nav-btn");
