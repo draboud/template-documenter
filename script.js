@@ -219,153 +219,153 @@ const PlayStateVid = function (playBtn) {
   playBtn.classList.add(stateFlag);
 };
 //.......................................................................................
-//MULTI VIDS DEFINITIONS.................................................................
-const allMultiBtns = document.querySelectorAll(".btn.multi");
-const allMultiBackBtns = [...document.querySelectorAll(".btn.back")];
-const allMultiImgTextBtns = document.querySelectorAll(".btn.img-text");
-const allMultiVidDivs = [...document.querySelectorAll(".vid-div-multi")];
-const allMultiVidDivsMP = [...document.querySelectorAll(".vid-div-multi.mp")];
-const allMultiVids = [...document.querySelectorAll(".vid-multi")];
-const allMultiVidsMP = [...document.querySelectorAll(".vid-multi-mp")];
-const allMultiAllWrappers = [
-  ...document.querySelectorAll(".multi-all-wrapper"),
-];
+//data VIDS DEFINITIONS.................................................................
+const allDataBtns = document.querySelectorAll(".btn.data");
+const allDataBackBtns = [...document.querySelectorAll(".btn.back")];
+const allDataImgTextBtns = document.querySelectorAll(".btn.img-text");
+const allDataVidDivs = [...document.querySelectorAll(".vid-div-data")];
+const allDataVidDivsMP = [...document.querySelectorAll(".vid-div-data.mp")];
+const allDataVids = [...document.querySelectorAll(".vid-data")];
+const allDataVidsMP = [...document.querySelectorAll(".vid-data-mp")];
+// const allDataAllWrappers = [
+//   ...document.querySelectorAll(".data-all-wrapper"),
+// ];
 //.......................................................................................
-//MULTI VIDS EVENTS......................................................................
-allMultiBtns.forEach(function (el) {
+//data VIDS EVENTS......................................................................
+allDataBtns.forEach(function (el) {
   el.addEventListener("click", function () {
-    let localIndex = GetLocalIndex(el, el.parentElement, "btn.multi");
-    el.closest(".multi-btn-wrapper").classList.remove("active");
-    ActivateMultiVid(el.closest(".vid-wrapper"), localIndex);
-    PlayMultiVid(el.closest(".vid-wrapper"));
+    let localIndex = GetLocalIndex(el, el.parentElement, "btn.data");
+    el.closest(".data-btn-wrapper").classList.remove("active");
+    ActivatedataVid(el.closest(".vid-wrapper"), localIndex);
+    PlaydataVid(el.closest(".vid-wrapper"));
   });
 });
-allMultiBackBtns.forEach(function (el) {
+allDataBackBtns.forEach(function (el) {
   el.addEventListener("click", function () {
     el.parentElement.classList.remove("active");
     el.parentElement.querySelector(".btn.img-text").textContent = "image";
     el.closest(".vid-wrapper")
       .querySelector(".dimmer")
       .classList.remove("active");
-    DeActivateAllMultiData(el.closest(".vid-wrapper"));
-    [...el.closest(".vid-wrapper").querySelectorAll(".vid-div-multi")]
+    DeActivateAlldataData(el.closest(".vid-wrapper"));
+    [...el.closest(".vid-wrapper").querySelectorAll(".vid-div-data")]
       .find((el) => el.classList.contains("active"))
-      .querySelector(".vid-multi").currentTime = 0;
-    [...el.closest(".vid-wrapper").querySelectorAll(".vid-div-multi.mp")]
+      .querySelector(".vid-data").currentTime = 0;
+    [...el.closest(".vid-wrapper").querySelectorAll(".vid-div-data.mp")]
       .find((el) => el.classList.contains("active"))
-      .querySelector(".vid-multi-mp").currentTime = 0;
+      .querySelector(".vid-data-mp").currentTime = 0;
     el.closest(".btn-wrapper")
-      .querySelector(".multi-btn-wrapper")
+      .querySelector(".data-btn-wrapper")
       .classList.add("active");
     el.closest(".vid-wrapper")
-      .querySelectorAll(".multi-all-wrapper")
+      .querySelectorAll(".data-all-wrapper")
       .forEach(function (el2) {
-        el2.querySelector(".multi-data-wrapper").scroll(0, 0);
+        el2.querySelector(".data-wrapper").scroll(0, 0);
       });
   });
 });
-allMultiImgTextBtns.forEach(function (el) {
+allDataImgTextBtns.forEach(function (el) {
   el.addEventListener("click", function () {
     if (el.textContent === "image") {
       let localIndex = GetLocalIndex(
         [
-          ...el.closest(".vid-wrapper").querySelectorAll(".multi-all-wrapper"),
+          ...el.closest(".vid-wrapper").querySelectorAll(".data-all-wrapper"),
         ].find((el2) => el2.classList.contains("active")),
         el.closest(".vid-wrapper").querySelector(".all-data-wrapper"),
-        "multi-all-wrapper",
+        "data-all-wrapper",
       );
       ((el.textContent = "text"),
         el
           .closest(".vid-wrapper")
           .querySelector(".dimmer")
           .classList.remove("active"));
-      [...el.closest(".vid-wrapper").querySelectorAll(".multi-all-wrapper")][
+      [...el.closest(".vid-wrapper").querySelectorAll(".data-all-wrapper")][
         localIndex
       ].classList.remove("active");
 
-      [...el.closest(".vid-wrapper").querySelectorAll(".multi-all-wrapper")][
+      [...el.closest(".vid-wrapper").querySelectorAll(".data-all-wrapper")][
         localIndex
       ].classList.add("last-active");
     } else {
       let localIndex = GetLocalIndex(
         [
-          ...el.closest(".vid-wrapper").querySelectorAll(".multi-all-wrapper"),
+          ...el.closest(".vid-wrapper").querySelectorAll(".data-all-wrapper"),
         ].find((el2) => el2.classList.contains("last-active")),
         el.closest(".vid-wrapper").querySelector(".all-data-wrapper"),
-        "multi-all-wrapper",
+        "data-all-wrapper",
       );
       el.closest(".vid-wrapper")
         .querySelector(".dimmer")
         .classList.remove("active");
-      [...el.closest(".vid-wrapper").querySelectorAll(".multi-all-wrapper")][
+      [...el.closest(".vid-wrapper").querySelectorAll(".data-all-wrapper")][
         localIndex
       ].classList.remove("active");
       el.textContent = "image";
       el.closest(".vid-wrapper")
         .querySelector(".dimmer")
         .classList.add("active");
-      [...el.closest(".vid-wrapper").querySelectorAll(".multi-all-wrapper")][
+      [...el.closest(".vid-wrapper").querySelectorAll(".data-all-wrapper")][
         localIndex
       ].classList.add("active");
 
-      [...el.closest(".vid-wrapper").querySelectorAll(".multi-all-wrapper")][
+      [...el.closest(".vid-wrapper").querySelectorAll(".data-all-wrapper")][
         localIndex
       ].classList.remove("last-active");
     }
   });
 });
-allMultiVids.forEach(function (el) {
+allDataVids.forEach(function (el) {
   el.addEventListener("ended", function () {
-    let localIndex = GetLocalIndex(el, el.closest(".vid-wrapper"), "vid-multi");
+    let localIndex = GetLocalIndex(el, el.closest(".vid-wrapper"), "vid-data");
     el.closest(".vid-wrapper")
       .querySelector(".back-img-text-btn-wrapper")
       .classList.add("active");
     el.closest(".vid-wrapper").querySelector(".dimmer").classList.add("active");
-    ActivateMultiData(el.closest(".vid-wrapper"), localIndex);
+    ActivatedataData(el.closest(".vid-wrapper"), localIndex);
   });
 });
 //.......................................................................................
 //MULT VIDS FUNCTIONS....................................................................
-const ActivateMultiVid = function (vidWrapper, localIndex) {
-  vidWrapper.querySelectorAll(".vid-div-multi").forEach(function (el) {
+const ActivatedataVid = function (vidWrapper, localIndex) {
+  vidWrapper.querySelectorAll(".vid-div-data").forEach(function (el) {
     el.classList.remove("active");
   });
-  vidWrapper.querySelectorAll(".vid-div-multi.mp").forEach(function (el) {
+  vidWrapper.querySelectorAll(".vid-div-data.mp").forEach(function (el) {
     el.classList.remove("active");
   });
   let activeCompVidDiv =
-    vidWrapper.querySelectorAll(".vid-div-multi")[localIndex];
+    vidWrapper.querySelectorAll(".vid-div-data")[localIndex];
   let activeCompVidDivMP =
-    vidWrapper.querySelectorAll(".vid-div-multi.mp")[localIndex];
+    vidWrapper.querySelectorAll(".vid-div-data.mp")[localIndex];
   activeCompVidDiv.classList.add("current");
   activeCompVidDivMP.classList.add("current");
 };
-const PlayMultiVid = function (vidWrapper) {
-  let currentMultiVidDiv = [
-    ...vidWrapper.querySelectorAll(".vid-div-multi"),
+const PlaydataVid = function (vidWrapper) {
+  let currentdataVidDiv = [
+    ...vidWrapper.querySelectorAll(".vid-div-data"),
   ].find((el) => el.classList.contains("current"));
-  currentMultiVidDiv.querySelector(".vid-multi").play();
-  currentMultiVidDiv.classList.add("active");
-  currentMultiVidDiv.classList.remove("current");
+  currentdataVidDiv.querySelector(".vid-data").play();
+  currentdataVidDiv.classList.add("active");
+  currentdataVidDiv.classList.remove("current");
 
-  let currentMultiVidDivMP = [
-    ...vidWrapper.querySelectorAll(".vid-div-multi.mp"),
+  let currentdataVidDivMP = [
+    ...vidWrapper.querySelectorAll(".vid-div-data.mp"),
   ].find((el) => el.classList.contains("current"));
-  currentMultiVidDivMP = allMultiVidDivsMP.find((el) =>
+  currentdataVidDivMP = allDataVidDivsMP.find((el) =>
     el.classList.contains("current"),
   );
-  currentMultiVidDivMP.querySelector(".vid-multi-mp").play();
-  currentMultiVidDivMP.classList.add("active");
-  currentMultiVidDivMP.classList.remove("current");
+  currentdataVidDivMP.querySelector(".vid-data-mp").play();
+  currentdataVidDivMP.classList.add("active");
+  currentdataVidDivMP.classList.remove("current");
 };
-const ActivateMultiData = function (vidWrapper, localIndex) {
-  DeActivateAllMultiData(vidWrapper);
+const ActivatedataData = function (vidWrapper, localIndex) {
+  DeActivateAlldataData(vidWrapper);
   vidWrapper
-    .querySelectorAll(".multi-all-wrapper")
+    .querySelectorAll(".data-all-wrapper")
     [localIndex].classList.add("active");
 };
-const DeActivateAllMultiData = function (vidWrapper) {
-  vidWrapper.querySelectorAll(".multi-all-wrapper").forEach(function (el) {
+const DeActivateAlldataData = function (vidWrapper) {
+  vidWrapper.querySelectorAll(".data-all-wrapper").forEach(function (el) {
     el.classList.remove("active");
   });
 };
