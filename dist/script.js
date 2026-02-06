@@ -1,6 +1,6 @@
 (() => {
   // script.js
-  console.log("Template-Documenter-Feb 5, 2026...Test-1");
+  console.log("Template-Documenter-Feb 6, 2026");
   var allChapterWrappers = document.querySelectorAll(".chapter-wrapper");
   var allSubChapterWrappers = document.querySelectorAll(".sub-chapter-wrapper");
   var allNavBtns = document.querySelectorAll(".nav-btn");
@@ -321,6 +321,7 @@
     el.addEventListener("click", function() {
       el.closest(".vid-wrapper").querySelector(".pause-btn-wrapper").classList.add("off");
       let localIndex = GetLocalIndex(el, el.parentElement, "btn.sequence");
+      ActivateSequenceBtns(el.closest(".vid-wrapper"), localIndex);
       ActivateSequence(el.closest(".vid-wrapper"), localIndex);
       PlaySequence(el.closest(".vid-wrapper"));
     });
@@ -351,6 +352,14 @@
       }
     });
   });
+  var ActivateSequenceBtns = function(vidWrapper, localIndex) {
+    vidWrapper.querySelectorAll(".btn.sequence").forEach(function(el) {
+      el.classList.remove("current");
+    });
+    [...vidWrapper.querySelectorAll(".btn.sequence")][localIndex].classList.add(
+      "current"
+    );
+  };
   var ActivateSequence = function(vidWrapper, localIndex) {
     DeActivateAllSequence(vidWrapper);
     [...vidWrapper.querySelectorAll(".vid-div-sequence")][localIndex].classList.add("active");
