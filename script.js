@@ -1,4 +1,43 @@
-console.log("Template-Documenter-Feb 6, 2026");
+console.log("Template-Documenter-Feb 6, 2026 test-1");
+
+document.addEventListener("DOMContentLoaded", () => {
+  const allLazyVids = [
+    ...document.querySelectorAll(".vid"),
+    ...document.querySelectorAll(".vid-data"),
+    ...document.querySelectorAll(".vid-data-mp"),
+    ...document.querySelectorAll(".vid-features"),
+    ...document.querySelectorAll(".vid-features-mp"),
+    ...document.querySelectorAll(".vid-sequence"),
+    ...document.querySelectorAll(".vid-sequence-mp"),
+  ];
+  const observerOptions = {
+    root: null, //observation happens relative to the viewport
+    rootMargin: "0px",
+    threshold: 0.1, //triggers when 10% of the video is visible
+  };
+  // Create the observer instance
+  const videoObserver = new IntersectionObserver((entries, observer) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        const video = entry.target;
+        const src = video.getAttribute("data-src");
+        if (src) {
+          // Set the actual src attribute to start loading
+          video.src = src;
+          // Optional: Call load() for <video> elements created dynamically
+          // video.load();
+        }
+        // Stop observing the video once it's loaded
+        observer.unobserve(video);
+      }
+    });
+  }, observerOptions);
+  // Start observing all target video elements
+  allLazyVids.forEach((vid) => {
+    videoObserver.observe(vid);
+  });
+});
+
 //.......................................................................................
 //DEFINITIONS............................................................................
 //NAV DEFINITIONS........................................................................
@@ -160,7 +199,7 @@ const CloseAllDotWrappers = function () {
 const allPlayBtns = document.querySelectorAll(".play-btn-wrapper");
 const allVids = [
   ...document.querySelectorAll(".vid"),
-  ...document.querySelectorAll(".vid-state"),
+  // ...document.querySelectorAll(".vid-state"),
 ];
 //.......................................................................................
 //SINGLE/TWO-STATE VIDS EVENTS...........................................................
@@ -196,7 +235,7 @@ const PlayStateVid = function (playBtn) {
   let playThis;
   playBtn
     .closest(".vid-wrapper")
-    .querySelectorAll(".vid-state")
+    .querySelectorAll(".vid")
     .forEach(function (el) {
       if (
         !el.parentElement.classList.contains(stateFlag) &&
@@ -213,7 +252,7 @@ const PlayStateVid = function (playBtn) {
       }
     });
   playThis.classList.remove("off");
-  playThis.querySelector(".vid-state").play();
+  playThis.querySelector(".vid").play();
   stateFlag === "state-1" ? (stateFlag = "state-2") : (stateFlag = "state-1");
   playBtn.classList.remove("state-1", "state-2");
   playBtn.classList.add(stateFlag);
@@ -321,6 +360,20 @@ allDataVids.forEach(function (el) {
     ActivateData(el.closest(".vid-wrapper"), localIndex);
   });
 });
+allDataVidsMP.forEach(function (el) {
+  el.addEventListener("ended", function () {
+    let localIndex = GetLocalIndex(
+      el,
+      el.closest(".vid-wrapper"),
+      "vid-data-mp",
+    );
+    el.closest(".vid-wrapper")
+      .querySelector(".back-img-text-btn-wrapper")
+      .classList.add("active");
+    el.closest(".vid-wrapper").querySelector(".dimmer").classList.add("active");
+    ActivateData(el.closest(".vid-wrapper"), localIndex);
+  });
+});
 //.......................................................................................
 //DATA VIDS FUNCTIONS....................................................................
 const ActivateDataVid = function (vidWrapper, localIndex) {
@@ -396,6 +449,9 @@ allFeaturesVids.forEach(function (el) {
 allFeaturesVidsMP.forEach(function (el) {
   el.addEventListener("ended", function () {
     el.currentTime = 0;
+    el.closest(".vid-wrapper")
+      .querySelector(".features-btn-wrapper")
+      .classList.add("active");
   });
 });
 //.......................................................................................
