@@ -363,12 +363,6 @@
   var allSequenceVids = [...document.querySelectorAll(".vid-sequence")];
   var allSequenceVidsMP = [...document.querySelectorAll(".vid-sequence-mp")];
   var allPauseBtnWrappers = document.querySelectorAll(".pause-btn-wrapper");
-  var allResetBtns = document.querySelectorAll("btn.sequence.reset");
-  allResetBtns.forEach(function(el) {
-    el.addEventListener("click", function() {
-      ResetSequence(el.closest(".vid-wrapper"));
-    });
-  });
   allSequenceBtns.forEach(function(el) {
     el.addEventListener("click", function() {
       el.closest(".vid-wrapper").querySelector(".pause-btn-wrapper").classList.add("off");
@@ -436,19 +430,6 @@
       ...vidWrapper.querySelectorAll(".vid-div-sequence-mp")
     ].find((el) => el.classList.contains("active"));
     currentSequenceMP.querySelector(".vid-sequence-mp").play();
-  };
-  var ResetSequence = function(vidWrapper) {
-    vidWrapper.querySelectorAll(".btn.sequence").forEach(function(el) {
-      el.classList.remove("current");
-    });
-    vidWrapper.querySelectorAll(".vid-sequence").forEach(function(el) {
-      el.pause();
-      el.currentTime = 0;
-    });
-    vidWrapper.querySelectorAll(".vid-sequence-mp").forEach(function(el) {
-      el.pause();
-      el.currentTime = 0;
-    });
   };
   var GetLocalIndex = function(el, parentEl, checkClass) {
     let localIndex;

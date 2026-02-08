@@ -493,14 +493,14 @@ const allSequenceVidDivsMP = [
 const allSequenceVids = [...document.querySelectorAll(".vid-sequence")];
 const allSequenceVidsMP = [...document.querySelectorAll(".vid-sequence-mp")];
 const allPauseBtnWrappers = document.querySelectorAll(".pause-btn-wrapper");
-const allResetBtns = document.querySelectorAll("btn.sequence.reset");
+// const allResetBtns = document.querySelectorAll("btn.sequence.reset");
 //.......................................................................................
 //SEQUENCE VIDS EVENTS......................................................................
-allResetBtns.forEach(function (el) {
-  el.addEventListener("click", function () {
-    ResetSequence(el.closest(".vid-wrapper"));
-  });
-});
+// allResetBtns.forEach(function (el) {
+//   el.addEventListener("click", function () {
+//     ResetSequence(el.closest(".vid-wrapper"));
+//   });
+// });
 allSequenceBtns.forEach(function (el) {
   el.addEventListener("click", function () {
     el.closest(".vid-wrapper")
