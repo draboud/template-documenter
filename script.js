@@ -448,33 +448,29 @@ allFeaturesVids.forEach(function (el) {
 //SEQUENCE VIDS DEFINITIONS.................................................................
 const allSequenceBtns = document.querySelectorAll(".btn.sequence");
 const allSequenceVidDivs = [...document.querySelectorAll(".vid-div-sequence")];
-const allSequenceVidDivsMP = [
-  ...document.querySelectorAll(".vid-div-sequence-mp"),
-];
 const allSequenceVids = [...document.querySelectorAll(".vid-sequence")];
-const allSequenceVidsMP = [...document.querySelectorAll(".vid-sequence-mp")];
 const allPauseBtnWrappers = document.querySelectorAll(".pause-btn-wrapper");
 //.......................................................................................
 //SEQUENCE VIDS EVENTS......................................................................
+
 allSequenceBtns.forEach(function (el) {
   el.addEventListener("click", function () {
-    el.closest(".vid-wrapper")
-      .querySelector(".pause-btn-wrapper")
-      .classList.add("off");
-    let localIndex = GetLocalIndex(el, el.parentElement, "btn.sequence");
-    ActivateSequenceBtns(el.closest(".vid-wrapper"), localIndex);
-    ActivateSequence(el.closest(".vid-wrapper"), localIndex);
-    PlaySequence(el.closest(".vid-wrapper"));
+    el.closest(".btn-wrapper.sequence").classList.remove("active");
+    let startTime = el.getAttribute("startTime");
+    let endTime = el.getAttribute("endTime");
+    let currentVid;
+    allSequenceVidDivs.forEach(function (el2) {
+      if (window.getComputedStyle(el2).display !== "none")
+        currentVid = el2.querySelector(".vid-sequence");
+    });
+    PlayRange(startTime, endTime, currentVid);
   });
 });
 allSequenceVids.forEach(function (el) {
   el.addEventListener("ended", function () {
-    el.pause();
-  });
-});
-allSequenceVidsMP.forEach(function (el) {
-  el.addEventListener("ended", function () {
-    el.pause();
+    el.closest(".vid-wrapper")
+      .querySelector(".btn-wrapper.sequence")
+      .classList.add("active");
   });
 });
 allPauseBtnWrappers.forEach(function (el) {
@@ -483,15 +479,15 @@ allPauseBtnWrappers.forEach(function (el) {
     let currentSequenceVid = [
       ...el.closest(".vid-wrapper").querySelectorAll(".vid-div-sequence"),
     ].find((el) => el.classList.contains("active"));
-    let currentSequenceVidMP = [
-      ...el.closest(".vid-wrapper").querySelectorAll(".vid-div-sequence-mp"),
-    ].find((el) => el.classList.contains("active"));
+    // let currentSequenceVidMP = [
+    //   ...el.closest(".vid-wrapper").querySelectorAll(".vid-div-sequence-mp"),
+    // ].find((el) => el.classList.contains("active"));
     if (el.classList.contains("off")) {
-      (currentSequenceVid.querySelector(".vid-sequence").play(),
-        currentSequenceVidMP.querySelector(".vid-sequence-mp").play());
+      currentSequenceVid.querySelector(".vid-sequence").play();
+      // currentSequenceVidMP.querySelector(".vid-sequence-mp").play());
     } else {
-      (currentSequenceVid.querySelector(".vid-sequence").pause(),
-        currentSequenceVidMP.querySelector(".vid-sequence-mp").pause());
+      currentSequenceVid.querySelector(".vid-sequence").pause();
+      // currentSequenceVidMP.querySelector(".vid-sequence-mp").pause());
     }
   });
 });

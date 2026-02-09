@@ -311,29 +311,24 @@
   });
   var allSequenceBtns = document.querySelectorAll(".btn.sequence");
   var allSequenceVidDivs = [...document.querySelectorAll(".vid-div-sequence")];
-  var allSequenceVidDivsMP = [
-    ...document.querySelectorAll(".vid-div-sequence-mp")
-  ];
   var allSequenceVids = [...document.querySelectorAll(".vid-sequence")];
-  var allSequenceVidsMP = [...document.querySelectorAll(".vid-sequence-mp")];
   var allPauseBtnWrappers = document.querySelectorAll(".pause-btn-wrapper");
   allSequenceBtns.forEach(function(el) {
     el.addEventListener("click", function() {
-      el.closest(".vid-wrapper").querySelector(".pause-btn-wrapper").classList.add("off");
-      let localIndex = GetLocalIndex(el, el.parentElement, "btn.sequence");
-      ActivateSequenceBtns(el.closest(".vid-wrapper"), localIndex);
-      ActivateSequence(el.closest(".vid-wrapper"), localIndex);
-      PlaySequence(el.closest(".vid-wrapper"));
+      el.closest(".btn-wrapper.sequence").classList.remove("active");
+      let startTime = el.getAttribute("startTime");
+      let endTime = el.getAttribute("endTime");
+      let currentVid;
+      allSequenceVidDivs.forEach(function(el2) {
+        if (window.getComputedStyle(el2).display !== "none")
+          currentVid = el2.querySelector(".vid-sequence");
+      });
+      PlayRange(startTime, endTime, currentVid);
     });
   });
   allSequenceVids.forEach(function(el) {
     el.addEventListener("ended", function() {
-      el.pause();
-    });
-  });
-  allSequenceVidsMP.forEach(function(el) {
-    el.addEventListener("ended", function() {
-      el.pause();
+      el.closest(".vid-wrapper").querySelector(".btn-wrapper.sequence").classList.add("active");
     });
   });
   allPauseBtnWrappers.forEach(function(el) {
@@ -342,49 +337,13 @@
       let currentSequenceVid = [
         ...el.closest(".vid-wrapper").querySelectorAll(".vid-div-sequence")
       ].find((el2) => el2.classList.contains("active"));
-      let currentSequenceVidMP = [
-        ...el.closest(".vid-wrapper").querySelectorAll(".vid-div-sequence-mp")
-      ].find((el2) => el2.classList.contains("active"));
       if (el.classList.contains("off")) {
-        currentSequenceVid.querySelector(".vid-sequence").play(), currentSequenceVidMP.querySelector(".vid-sequence-mp").play();
+        currentSequenceVid.querySelector(".vid-sequence").play();
       } else {
-        currentSequenceVid.querySelector(".vid-sequence").pause(), currentSequenceVidMP.querySelector(".vid-sequence-mp").pause();
+        currentSequenceVid.querySelector(".vid-sequence").pause();
       }
     });
   });
-  var ActivateSequenceBtns = function(vidWrapper, localIndex) {
-    vidWrapper.querySelectorAll(".btn.sequence").forEach(function(el) {
-      el.classList.remove("current");
-    });
-    [...vidWrapper.querySelectorAll(".btn.sequence")][localIndex].classList.add(
-      "current"
-    );
-  };
-  var ActivateSequence = function(vidWrapper, localIndex) {
-    DeActivateAllSequence(vidWrapper);
-    [...vidWrapper.querySelectorAll(".vid-div-sequence")][localIndex].classList.add("active");
-    [...vidWrapper.querySelectorAll(".vid-div-sequence-mp")][localIndex].classList.add("active");
-  };
-  var DeActivateAllSequence = function(vidWrapper) {
-    vidWrapper.querySelectorAll(".vid-div-sequence").forEach(function(el) {
-      el.classList.remove("active");
-      el.querySelector(".vid-sequence").currentTime = 0;
-    });
-    vidWrapper.querySelectorAll(".vid-div-sequence-mp").forEach(function(el) {
-      el.classList.remove("active");
-      el.querySelector(".vid-sequence-mp").currentTime = 0;
-    });
-  };
-  var PlaySequence = function(vidWrapper) {
-    let currentSequence = [
-      ...vidWrapper.querySelectorAll(".vid-div-sequence")
-    ].find((el) => el.classList.contains("active"));
-    currentSequence.querySelector(".vid-sequence").play();
-    let currentSequenceMP = [
-      ...vidWrapper.querySelectorAll(".vid-div-sequence-mp")
-    ].find((el) => el.classList.contains("active"));
-    currentSequenceMP.querySelector(".vid-sequence-mp").play();
-  };
   var GetLocalIndex = function(el, parentEl, checkClass) {
     let localIndex;
     el.classList.add("selected");
