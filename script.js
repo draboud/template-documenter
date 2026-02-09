@@ -1,8 +1,9 @@
-console.log("Template-Documenter-Feb 6, 2026 test-1");
+console.log("Template-Documenter-BRANCH: Timestamps");
 
 document.addEventListener("DOMContentLoaded", () => {
   const allLazyVids = [
     ...document.querySelectorAll(".vid"),
+    ...document.querySelectorAll(".vid-state"),
     ...document.querySelectorAll(".vid-data"),
     ...document.querySelectorAll(".vid-data-mp"),
     ...document.querySelectorAll(".vid-features"),
@@ -197,10 +198,8 @@ const CloseAllDotWrappers = function () {
 //.......................................................................................
 //SINGLE/TWO-STATE VIDS DEFINITIONS......................................................
 const allPlayBtns = document.querySelectorAll(".play-btn-wrapper");
-const allVids = [
-  ...document.querySelectorAll(".vid"),
-  // ...document.querySelectorAll(".vid-state"),
-];
+const allVids = document.querySelectorAll(".vid");
+const allStateVids = document.querySelectorAll(".vid-state");
 //.......................................................................................
 //SINGLE/TWO-STATE VIDS EVENTS...........................................................
 allPlayBtns.forEach(function (el) {
@@ -228,31 +227,36 @@ allVids.forEach(function (el) {
     el.currentTime = 0;
   });
 });
+allStateVids.forEach(function (el) {
+  el.addEventListener("ended", function () {
+    el.closest(".vid-wrapper")
+      .querySelector(".play-btn-wrapper")
+      .classList.remove("off");
+  });
+});
 //.......................................................................................
 //TWO-STATE VIDS FUNCTIONS...............................................................
 const PlayStateVid = function (playBtn) {
   let stateFlag = playBtn.classList[1];
-  let playThis;
+  let startTime;
+  let endTime;
+  let currentVid;
   playBtn
     .closest(".vid-wrapper")
-    .querySelectorAll(".vid")
+    .querySelectorAll(".vid-div-state")
     .forEach(function (el) {
-      if (
-        !el.parentElement.classList.contains(stateFlag) &&
-        window.getComputedStyle(el.parentElement).display !== "none"
-      ) {
-        el.parentElement.classList.add("off");
-        el.currentTime = 0;
-      }
-      if (
-        el.parentElement.classList.contains(stateFlag) &&
-        window.getComputedStyle(el.parentElement).display !== "none"
-      ) {
-        playThis = el.parentElement;
+      if (window.getComputedStyle(el).display !== "none") {
+        currentVid = el.querySelector(".vid-state");
       }
     });
-  playThis.classList.remove("off");
-  playThis.querySelector(".vid").play();
+  if (stateFlag === "state-1") {
+    startTime = playBtn.getAttribute("state-1-startTime");
+    endTime = playBtn.getAttribute("state-1-endTime");
+  } else {
+    startTime = playBtn.getAttribute("state-2-startTime");
+    endTime = playBtn.getAttribute("state-2-endTime");
+  }
+  PlayRange(startTime, endTime, currentVid);
   stateFlag === "state-1" ? (stateFlag = "state-2") : (stateFlag = "state-1");
   playBtn.classList.remove("state-1", "state-2");
   playBtn.classList.add(stateFlag);
@@ -263,19 +267,42 @@ const allDataBtns = document.querySelectorAll(".btn.data");
 const allDataBackBtns = [...document.querySelectorAll(".btn.back")];
 const allDataImgTextBtns = document.querySelectorAll(".btn.img-text");
 const allDataVidDivs = [...document.querySelectorAll(".vid-div-data")];
-const allDataVidDivsMP = [...document.querySelectorAll(".vid-div-data.mp")];
 const allDataVids = [...document.querySelectorAll(".vid-data")];
-const allDataVidsMP = [...document.querySelectorAll(".vid-data-mp")];
 //.......................................................................................
 //DATA VIDS EVENTS......................................................................
 allDataBtns.forEach(function (el) {
   el.addEventListener("click", function () {
-    let localIndex = GetLocalIndex(el, el.parentElement, "btn.data");
     el.closest(".data-btn-wrapper").classList.remove("active");
-    ActivateDataVid(el.closest(".vid-wrapper"), localIndex);
-    PlayDataVid(el.closest(".vid-wrapper"));
+    el.classList.add("clicked");
+    let startTime = el.getAttribute("startTime");
+    let endTime = el.getAttribute("endTime");
+    let currentVid;
+    allDataVidDivs.forEach(function (el2) {
+      if (window.getComputedStyle(el2).display !== "none")
+        currentVid = el2.querySelector(".vid-data");
+    });
+    PlayRange(startTime, endTime, currentVid);
   });
 });
+allDataVids.forEach(function (el) {
+  el.addEventListener("ended", function () {
+    let localIndex;
+    el.closest(".vid-wrapper")
+      .querySelectorAll(".btn.data")
+      .forEach(function (el2, index) {
+        if (el2.classList.contains("clicked")) {
+          el2.classList.remove("clicked");
+          localIndex = index;
+        }
+      });
+    el.closest(".vid-wrapper")
+      .querySelector(".back-img-text-btn-wrapper")
+      .classList.add("active");
+    el.closest(".vid-wrapper").querySelector(".dimmer").classList.add("active");
+    ActivateData(el.closest(".vid-wrapper"), localIndex);
+  });
+});
+
 allDataBackBtns.forEach(function (el) {
   el.addEventListener("click", function () {
     el.parentElement.classList.remove("active");
@@ -284,12 +311,11 @@ allDataBackBtns.forEach(function (el) {
       .querySelector(".dimmer")
       .classList.remove("active");
     DeActivateAllData(el.closest(".vid-wrapper"));
-    [...el.closest(".vid-wrapper").querySelectorAll(".vid-div-data")]
-      .find((el) => el.classList.contains("active"))
-      .querySelector(".vid-data").currentTime = 0;
-    [...el.closest(".vid-wrapper").querySelectorAll(".vid-div-data.mp")]
-      .find((el) => el.classList.contains("active"))
-      .querySelector(".vid-data-mp").currentTime = 0;
+    el.closest(".vid-wrapper")
+      .querySelectorAll(".vid-div-data")
+      .forEach(function (el2) {
+        el2.querySelector(".vid-data").currentTime = 0;
+      });
     el.closest(".btn-wrapper")
       .querySelector(".data-btn-wrapper")
       .classList.add("active");
@@ -350,30 +376,6 @@ allDataImgTextBtns.forEach(function (el) {
     }
   });
 });
-allDataVids.forEach(function (el) {
-  el.addEventListener("ended", function () {
-    let localIndex = GetLocalIndex(el, el.closest(".vid-wrapper"), "vid-data");
-    el.closest(".vid-wrapper")
-      .querySelector(".back-img-text-btn-wrapper")
-      .classList.add("active");
-    el.closest(".vid-wrapper").querySelector(".dimmer").classList.add("active");
-    ActivateData(el.closest(".vid-wrapper"), localIndex);
-  });
-});
-allDataVidsMP.forEach(function (el) {
-  el.addEventListener("ended", function () {
-    let localIndex = GetLocalIndex(
-      el,
-      el.closest(".vid-wrapper"),
-      "vid-data-mp",
-    );
-    el.closest(".vid-wrapper")
-      .querySelector(".back-img-text-btn-wrapper")
-      .classList.add("active");
-    el.closest(".vid-wrapper").querySelector(".dimmer").classList.add("active");
-    ActivateData(el.closest(".vid-wrapper"), localIndex);
-  });
-});
 //.......................................................................................
 //DATA VIDS FUNCTIONS....................................................................
 const ActivateDataVid = function (vidWrapper, localIndex) {
@@ -390,24 +392,6 @@ const ActivateDataVid = function (vidWrapper, localIndex) {
   activeCompVidDiv.classList.add("current");
   activeCompVidDivMP.classList.add("current");
 };
-const PlayDataVid = function (vidWrapper) {
-  let currentdataVidDiv = [
-    ...vidWrapper.querySelectorAll(".vid-div-data"),
-  ].find((el) => el.classList.contains("current"));
-  currentdataVidDiv.querySelector(".vid-data").play();
-  currentdataVidDiv.classList.add("active");
-  currentdataVidDiv.classList.remove("current");
-
-  let currentdataVidDivMP = [
-    ...vidWrapper.querySelectorAll(".vid-div-data.mp"),
-  ].find((el) => el.classList.contains("current"));
-  currentdataVidDivMP = allDataVidDivsMP.find((el) =>
-    el.classList.contains("current"),
-  );
-  currentdataVidDivMP.querySelector(".vid-data-mp").play();
-  currentdataVidDivMP.classList.add("active");
-  currentdataVidDivMP.classList.remove("current");
-};
 const ActivateData = function (vidWrapper, localIndex) {
   DeActivateAllData(vidWrapper);
   vidWrapper
@@ -423,32 +407,24 @@ const DeActivateAllData = function (vidWrapper) {
 //FEATURES VIDS DEFINITIONS.................................................................
 const allFeaturesBtns = document.querySelectorAll(".btn.features");
 const allFeaturesVidDivs = [...document.querySelectorAll(".vid-div-features")];
-const allFeaturesVidDivsMP = [
-  ...document.querySelectorAll(".vid-div-features.mp"),
-];
 const allFeaturesVids = [...document.querySelectorAll(".vid-features")];
-const allFeaturesVidsMP = [...document.querySelectorAll(".vid-features-mp")];
 //.......................................................................................
 //FEATURES VIDS EVENTS......................................................................
 allFeaturesBtns.forEach(function (el) {
   el.addEventListener("click", function () {
-    let localIndex = GetLocalIndex(el, el.parentElement, "btn.features");
     el.closest(".features-btn-wrapper").classList.remove("active");
-    ActivateFeaturesVid(el.closest(".vid-wrapper"), localIndex);
-    PlayFeaturesVid(el.closest(".vid-wrapper"));
+    let startTime = el.getAttribute("startTime");
+    let endTime = el.getAttribute("endTime");
+    let currentVid;
+    allFeaturesVidDivs.forEach(function (el2) {
+      if (window.getComputedStyle(el2).display !== "none")
+        currentVid = el2.querySelector(".vid-features");
+    });
+    PlayRange(startTime, endTime, currentVid);
   });
 });
 allFeaturesVids.forEach(function (el) {
   el.addEventListener("ended", function () {
-    el.currentTime = 0;
-    el.closest(".vid-wrapper")
-      .querySelector(".features-btn-wrapper")
-      .classList.add("active");
-  });
-});
-allFeaturesVidsMP.forEach(function (el) {
-  el.addEventListener("ended", function () {
-    el.currentTime = 0;
     el.closest(".vid-wrapper")
       .querySelector(".features-btn-wrapper")
       .classList.add("active");
@@ -456,33 +432,7 @@ allFeaturesVidsMP.forEach(function (el) {
 });
 //.......................................................................................
 //FEATURES VIDS FUNCTIONS....................................................................
-const ActivateFeaturesVid = function (vidWrapper, localIndex) {
-  DeActivateAllFeatures(vidWrapper);
-  [...vidWrapper.querySelectorAll(".vid-div-features")][
-    localIndex
-  ].classList.add("active");
-  [...vidWrapper.querySelectorAll(".vid-div-features.mp")][
-    localIndex
-  ].classList.add("active");
-};
-const DeActivateAllFeatures = function (vidWrapper) {
-  vidWrapper.querySelectorAll(".vid-div-features").forEach(function (el) {
-    el.classList.remove("active");
-  });
-  vidWrapper.querySelectorAll(".vid-div-features.mp").forEach(function (el) {
-    el.classList.remove("active");
-  });
-};
-const PlayFeaturesVid = function (vidWrapper) {
-  let currentFeaturesDiv = [
-    ...vidWrapper.querySelectorAll(".vid-div-features"),
-  ].find((el) => el.classList.contains("active"));
-  currentFeaturesDiv.querySelector(".vid-features").play();
-  let currentFeaturesDivMP = [
-    ...vidWrapper.querySelectorAll(".vid-div-features.mp"),
-  ].find((el) => el.classList.contains("active"));
-  currentFeaturesDivMP.querySelector(".vid-features-mp").play();
-};
+
 //.......................................................................................
 //SEQUENCE VIDS DEFINITIONS.................................................................
 const allSequenceBtns = document.querySelectorAll(".btn.sequence");
@@ -493,14 +443,8 @@ const allSequenceVidDivsMP = [
 const allSequenceVids = [...document.querySelectorAll(".vid-sequence")];
 const allSequenceVidsMP = [...document.querySelectorAll(".vid-sequence-mp")];
 const allPauseBtnWrappers = document.querySelectorAll(".pause-btn-wrapper");
-// const allResetBtns = document.querySelectorAll("btn.sequence.reset");
 //.......................................................................................
 //SEQUENCE VIDS EVENTS......................................................................
-// allResetBtns.forEach(function (el) {
-//   el.addEventListener("click", function () {
-//     ResetSequence(el.closest(".vid-wrapper"));
-//   });
-// });
 allSequenceBtns.forEach(function (el) {
   el.addEventListener("click", function () {
     el.closest(".vid-wrapper")
@@ -604,4 +548,16 @@ const GetLocalIndex = function (el, parentEl, checkClass) {
     }
   });
   return localIndex;
+};
+const PlayRange = function (startTime, endTime, video) {
+  video.addEventListener("timeupdate", function checkTime() {
+    if (video.currentTime >= endTime) {
+      video.pause();
+      video.removeEventListener("timeupdate", checkTime);
+      const endedEvent = new Event("ended", function () {});
+      video.dispatchEvent(endedEvent);
+    }
+  });
+  video.currentTime = startTime;
+  video.play();
 };
