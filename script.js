@@ -1,4 +1,4 @@
-console.log("Template-Documenter-BRANCH: Timestamps");
+console.log("Template-Documenter-BRANCH: Main");
 
 document.addEventListener("DOMContentLoaded", () => {
   const allLazyVids = [
