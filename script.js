@@ -452,7 +452,6 @@ const allSequenceVids = [...document.querySelectorAll(".vid-sequence")];
 const allPauseBtnWrappers = document.querySelectorAll(".pause-btn-wrapper");
 //.......................................................................................
 //SEQUENCE VIDS EVENTS......................................................................
-
 allSequenceBtns.forEach(function (el) {
   el.addEventListener("click", function () {
     el.closest(".btn-wrapper.sequence").classList.remove("active");
@@ -479,15 +478,10 @@ allPauseBtnWrappers.forEach(function (el) {
     let currentSequenceVid = [
       ...el.closest(".vid-wrapper").querySelectorAll(".vid-div-sequence"),
     ].find((el) => el.classList.contains("active"));
-    // let currentSequenceVidMP = [
-    //   ...el.closest(".vid-wrapper").querySelectorAll(".vid-div-sequence-mp"),
-    // ].find((el) => el.classList.contains("active"));
     if (el.classList.contains("off")) {
       currentSequenceVid.querySelector(".vid-sequence").play();
-      // currentSequenceVidMP.querySelector(".vid-sequence-mp").play());
     } else {
       currentSequenceVid.querySelector(".vid-sequence").pause();
-      // currentSequenceVidMP.querySelector(".vid-sequence-mp").pause());
     }
   });
 });
