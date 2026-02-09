@@ -1,44 +1,43 @@
 (() => {
   // script.js
-  console.log("Template-Documenter-BRANCH: Main");
+  console.log("Template-Documenter-BRANCH: Main...Test-1");
   document.addEventListener("DOMContentLoaded", () => {
-    const allLazyVids = [
-      ...document.querySelectorAll(".vid"),
-      ...document.querySelectorAll(".vid-state"),
-      ...document.querySelectorAll(".vid-data"),
-      ...document.querySelectorAll(".vid-data-mp"),
-      ...document.querySelectorAll(".vid-features"),
-      ...document.querySelectorAll(".vid-features-mp"),
-      ...document.querySelectorAll(".vid-sequence"),
-      ...document.querySelectorAll(".vid-sequence-mp")
-    ];
+    const allLazyVids = document.querySelectorAll(
+      ".vid, .vid-state, .vid-data, .vid-features, .vid-sequence"
+    );
     const observerOptions = {
       root: null,
-      //observation happens relative to the viewport
       rootMargin: "0px",
       threshold: 0.1
-      //triggers when 10% of the video is visible
     };
-    const videoObserver = new IntersectionObserver((entries, observer) => {
+    const videoObserver = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
+        const video = entry.target;
+        const sources = video.querySelectorAll("source");
         if (entry.isIntersecting) {
-          const video = entry.target;
-          const sources = video.querySelectorAll("source");
           sources.forEach((source) => {
-            const dataSrc = source.getAttribute("data-src");
+            const dataSrc = source.getAttribute("data-src") || source.src;
             if (dataSrc) {
               source.src = dataSrc;
-              source.removeAttribute("data-src");
+              source.setAttribute("data-src", dataSrc);
             }
           });
           video.load();
-          observer.unobserve(video);
+        } else {
+          video.pause();
+          sources.forEach((source) => {
+            const currentSrc = source.src;
+            if (currentSrc) {
+              source.setAttribute("data-src", currentSrc);
+              source.src = "";
+              source.removeAttribute("src");
+            }
+          });
+          video.load();
         }
       });
     }, observerOptions);
-    allLazyVids.forEach((vid) => {
-      videoObserver.observe(vid);
-    });
+    allLazyVids.forEach((vid) => videoObserver.observe(vid));
   });
   var allChapterWrappers = document.querySelectorAll(".chapter-wrapper");
   var allSubChapterWrappers = document.querySelectorAll(".sub-chapter-wrapper");
@@ -204,7 +203,6 @@
   var allDataBtns = document.querySelectorAll(".btn.data");
   var allDataBackBtns = [...document.querySelectorAll(".btn.back")];
   var allDataImgTextBtns = document.querySelectorAll(".btn.img-text");
-  var allDataVidDivs = [...document.querySelectorAll(".vid-div-data")];
   var allDataVids = [...document.querySelectorAll(".vid-data")];
   allDataBtns.forEach(function(el) {
     el.addEventListener("click", function() {
@@ -213,7 +211,7 @@
       let startTime = el.getAttribute("startTime");
       let endTime = el.getAttribute("endTime");
       let currentVid;
-      allDataVidDivs.forEach(function(el2) {
+      el.closest(".vid-wrapper").querySelectorAll(".vid-div-data").forEach(function(el2) {
         if (window.getComputedStyle(el2).display !== "none")
           currentVid = el2.querySelector(".vid-data");
       });
@@ -289,7 +287,6 @@
     });
   };
   var allFeaturesBtns = document.querySelectorAll(".btn.features");
-  var allFeaturesVidDivs = [...document.querySelectorAll(".vid-div-features")];
   var allFeaturesVids = [...document.querySelectorAll(".vid-features")];
   allFeaturesBtns.forEach(function(el) {
     el.addEventListener("click", function() {
@@ -297,7 +294,7 @@
       let startTime = el.getAttribute("startTime");
       let endTime = el.getAttribute("endTime");
       let currentVid;
-      allFeaturesVidDivs.forEach(function(el2) {
+      el.closest(".vid-wrapper").querySelectorAll(".vid-div-features").forEach(function(el2) {
         if (window.getComputedStyle(el2).display !== "none")
           currentVid = el2.querySelector(".vid-features");
       });
@@ -314,36 +311,76 @@
   var allSequenceVids = [...document.querySelectorAll(".vid-sequence")];
   var allPauseBtnWrappers = document.querySelectorAll(".pause-btn-wrapper");
   allSequenceBtns.forEach(function(el) {
-    el.addEventListener("click", function() {
-      el.closest(".btn-wrapper.sequence").classList.remove("active");
+    el.addEventListener("click", function(e) {
+      const clicked = e.target.closest(".btn.sequence");
+      if (!clicked) return;
+      ResetAllVids(el.closest(".vid-wrapper"));
+      let localIndex = GetLocalIndex(
+        el,
+        el.closest(".btn-wrapper.sequence"),
+        "btn.sequence"
+      );
+      let localPauseWrapper = el.closest(".vid-wrapper").querySelector(".pause-btn-wrapper");
+      if (!localPauseWrapper.classList.contains("off"))
+        localPauseWrapper.classList.add("off");
+      localPauseWrapper.style.pointerEvents = "auto";
+      ActivateSequenceBtns(el.closest(".vid-wrapper"), localIndex);
       let startTime = el.getAttribute("startTime");
       let endTime = el.getAttribute("endTime");
       let currentVid;
-      allSequenceVidDivs.forEach(function(el2) {
+      el.closest(".vid-wrapper").querySelectorAll(".vid-div-sequence").forEach(function(el2) {
         if (window.getComputedStyle(el2).display !== "none")
           currentVid = el2.querySelector(".vid-sequence");
       });
+      currentVid.parentElement.classList.add("jumping");
       PlayRange(startTime, endTime, currentVid);
     });
   });
   allSequenceVids.forEach(function(el) {
     el.addEventListener("ended", function() {
-      el.closest(".vid-wrapper").querySelector(".btn-wrapper.sequence").classList.add("active");
+      el.closest(".vid-wrapper").querySelector(".pause-btn-wrapper").style.pointerEvents = "none";
     });
   });
   allPauseBtnWrappers.forEach(function(el) {
-    el.addEventListener("click", function() {
+    el.addEventListener("click", function(e) {
+      const clicked = e.target.closest(".pause-btn-wrapper");
+      if (!clicked) return;
+      let startTime;
+      let endTime;
+      let currentVid;
+      el.closest(".vid-wrapper").querySelectorAll(".btn.sequence").forEach(function(el2) {
+        if (el2.classList.contains("current")) {
+          startTime = el2.getAttribute("startTime");
+          endTime = el2.getAttribute("endTime");
+          currentVid;
+          el2.closest(".vid-wrapper").querySelectorAll(".vid-div-sequence").forEach(function(el22) {
+            if (window.getComputedStyle(el22).display !== "none")
+              currentVid = el22.querySelector(".vid-sequence");
+          });
+        }
+      });
       el.classList.toggle("off");
-      let currentSequenceVid = [
-        ...el.closest(".vid-wrapper").querySelectorAll(".vid-div-sequence")
-      ].find((el2) => el2.classList.contains("active"));
       if (el.classList.contains("off")) {
-        currentSequenceVid.querySelector(".vid-sequence").play();
+        PlayRange(startTime, endTime, currentVid, currentVid.currentTime);
       } else {
-        currentSequenceVid.querySelector(".vid-sequence").pause();
+        currentVid.pause();
       }
     });
   });
+  var ResetAllVids = function(vidWrapper) {
+    vidWrapper.querySelectorAll(".vid-sequence").forEach(function(el) {
+      el.pause();
+      el.currentTime = 0;
+    });
+  };
+  var ActivateSequenceBtns = function(vidWrapper, localIndex) {
+    vidWrapper.querySelectorAll(".btn.sequence").forEach(function(el) {
+      el.classList.remove("current");
+    });
+    [...vidWrapper.querySelectorAll(".btn.sequence")][localIndex].classList.add(
+      "current"
+    );
+  };
   var GetLocalIndex = function(el, parentEl, checkClass) {
     let localIndex;
     el.classList.add("selected");
@@ -355,19 +392,36 @@
     });
     return localIndex;
   };
-  var PlayRange = function(startTime, endTime, video) {
+  var PlayRange = function(startTime, endTime, video, videoCurrentTime) {
+    if (video._currentCheckTime) {
+      video.removeEventListener("timeupdate", video._currentCheckTime);
+    }
     const checkTime = function() {
       if (video.currentTime >= endTime) {
         video.pause();
         video.removeEventListener("timeupdate", checkTime);
+        video._currentCheckTime = null;
+        if (video.parentElement.classList.contains("jumping")) return;
         video.dispatchEvent(new Event("ended"));
       }
     };
+    video._currentCheckTime = checkTime;
     video.addEventListener("timeupdate", checkTime);
-    video.currentTime = startTime;
-    video.onseeked = function() {
-      video.play();
-      video.onseeked = null;
-    };
+    video.currentTime = videoCurrentTime || startTime;
+    video.addEventListener(
+      "seeked",
+      () => {
+        video.parentElement.classList.remove("jumping");
+        PlayVideo(video);
+      },
+      { once: true }
+    );
   };
+  async function PlayVideo(video) {
+    try {
+      await video.play();
+    } catch (err) {
+      console.error("Playback failed or was interrupted:", err);
+    }
+  }
 })();

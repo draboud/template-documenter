@@ -1,53 +1,52 @@
-console.log("Template-Documenter-BRANCH: Main");
-
+console.log("Template-Documenter-BRANCH: Main...Test-1");
 document.addEventListener("DOMContentLoaded", () => {
-  const allLazyVids = [
-    ...document.querySelectorAll(".vid"),
-    ...document.querySelectorAll(".vid-state"),
-    ...document.querySelectorAll(".vid-data"),
-    ...document.querySelectorAll(".vid-data-mp"),
-    ...document.querySelectorAll(".vid-features"),
-    ...document.querySelectorAll(".vid-features-mp"),
-    ...document.querySelectorAll(".vid-sequence"),
-    ...document.querySelectorAll(".vid-sequence-mp"),
-  ];
-  const observerOptions = {
-    root: null, //observation happens relative to the viewport
-    rootMargin: "0px",
-    threshold: 0.1, //triggers when 10% of the video is visible
-  };
-  // Create the observer instance
-  const videoObserver = new IntersectionObserver((entries, observer) => {
-    entries.forEach((entry) => {
-      if (entry.isIntersecting) {
-        const video = entry.target;
-        const sources = video.querySelectorAll("source");
+  const allLazyVids = document.querySelectorAll(
+    ".vid, .vid-state, .vid-data, .vid-features, .vid-sequence",
+  );
 
-        // 1. Loop through all <source> tags inside the video
+  const observerOptions = {
+    root: null,
+    rootMargin: "0px",
+    threshold: 0.1,
+  };
+
+  const videoObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      const video = entry.target;
+      const sources = video.querySelectorAll("source");
+
+      if (entry.isIntersecting) {
+        // --- LOAD LOGIC ---
         sources.forEach((source) => {
-          const dataSrc = source.getAttribute("data-src");
+          // Use data-src if available, otherwise keep current src
+          const dataSrc = source.getAttribute("data-src") || source.src;
           if (dataSrc) {
             source.src = dataSrc;
-            source.removeAttribute("data-src"); // Optional: Clean up
+            // Keep data-src attribute so we can find the URL again later
+            source.setAttribute("data-src", dataSrc);
           }
         });
-
-        // 2. CRITICAL: You MUST call .load() so the browser registers the new sources
         video.load();
-
-        // 3. Optional: If you want them to autoplay on scroll, uncomment the next line
-        // video.play();
-
-        // Stop observing after the "swap" is done
-        observer.unobserve(video);
+        // video.play(); // Optional
+      } else {
+        // --- UNLOAD LOGIC ---
+        video.pause();
+        sources.forEach((source) => {
+          // Move src back to data-src and empty the current src
+          const currentSrc = source.src;
+          if (currentSrc) {
+            source.setAttribute("data-src", currentSrc);
+            source.src = ""; // This stops the video from buffering
+            source.removeAttribute("src"); // Fully clear attribute
+          }
+        });
+        // Force the browser to dump the video data from memory
+        video.load();
       }
     });
   }, observerOptions);
 
-  // Start observing all target video elements
-  allLazyVids.forEach((vid) => {
-    videoObserver.observe(vid);
-  });
+  allLazyVids.forEach((vid) => videoObserver.observe(vid));
 });
 
 //.......................................................................................
@@ -277,7 +276,7 @@ const PlayStateVid = function (playBtn) {
 const allDataBtns = document.querySelectorAll(".btn.data");
 const allDataBackBtns = [...document.querySelectorAll(".btn.back")];
 const allDataImgTextBtns = document.querySelectorAll(".btn.img-text");
-const allDataVidDivs = [...document.querySelectorAll(".vid-div-data")];
+// const allDataVidDivs = [...document.querySelectorAll(".vid-div-data")];
 const allDataVids = [...document.querySelectorAll(".vid-data")];
 //.......................................................................................
 //DATA VIDS EVENTS......................................................................
@@ -288,10 +287,12 @@ allDataBtns.forEach(function (el) {
     let startTime = el.getAttribute("startTime");
     let endTime = el.getAttribute("endTime");
     let currentVid;
-    allDataVidDivs.forEach(function (el2) {
-      if (window.getComputedStyle(el2).display !== "none")
-        currentVid = el2.querySelector(".vid-data");
-    });
+    el.closest(".vid-wrapper")
+      .querySelectorAll(".vid-div-data")
+      .forEach(function (el2) {
+        if (window.getComputedStyle(el2).display !== "none")
+          currentVid = el2.querySelector(".vid-data");
+      });
     PlayRange(startTime, endTime, currentVid);
   });
 });
@@ -417,7 +418,6 @@ const DeActivateAllData = function (vidWrapper) {
 //.......................................................................................
 //FEATURES VIDS DEFINITIONS.................................................................
 const allFeaturesBtns = document.querySelectorAll(".btn.features");
-const allFeaturesVidDivs = [...document.querySelectorAll(".vid-div-features")];
 const allFeaturesVids = [...document.querySelectorAll(".vid-features")];
 //.......................................................................................
 //FEATURES VIDS EVENTS......................................................................
@@ -427,10 +427,12 @@ allFeaturesBtns.forEach(function (el) {
     let startTime = el.getAttribute("startTime");
     let endTime = el.getAttribute("endTime");
     let currentVid;
-    allFeaturesVidDivs.forEach(function (el2) {
-      if (window.getComputedStyle(el2).display !== "none")
-        currentVid = el2.querySelector(".vid-features");
-    });
+    el.closest(".vid-wrapper")
+      .querySelectorAll(".vid-div-features")
+      .forEach(function (el2) {
+        if (window.getComputedStyle(el2).display !== "none")
+          currentVid = el2.querySelector(".vid-features");
+      });
     PlayRange(startTime, endTime, currentVid);
   });
 });
@@ -443,7 +445,6 @@ allFeaturesVids.forEach(function (el) {
 });
 //.......................................................................................
 //FEATURES VIDS FUNCTIONS....................................................................
-
 //.......................................................................................
 //SEQUENCE VIDS DEFINITIONS.................................................................
 const allSequenceBtns = document.querySelectorAll(".btn.sequence");
@@ -453,40 +454,80 @@ const allPauseBtnWrappers = document.querySelectorAll(".pause-btn-wrapper");
 //.......................................................................................
 //SEQUENCE VIDS EVENTS......................................................................
 allSequenceBtns.forEach(function (el) {
-  el.addEventListener("click", function () {
-    el.closest(".btn-wrapper.sequence").classList.remove("active");
+  el.addEventListener("click", function (e) {
+    const clicked = e.target.closest(".btn.sequence");
+    if (!clicked) return;
+    ResetAllVids(el.closest(".vid-wrapper"));
+    let localIndex = GetLocalIndex(
+      el,
+      el.closest(".btn-wrapper.sequence"),
+      "btn.sequence",
+    );
+    let localPauseWrapper = el
+      .closest(".vid-wrapper")
+      .querySelector(".pause-btn-wrapper");
+    if (!localPauseWrapper.classList.contains("off"))
+      localPauseWrapper.classList.add("off");
+    localPauseWrapper.style.pointerEvents = "auto";
+    ActivateSequenceBtns(el.closest(".vid-wrapper"), localIndex);
     let startTime = el.getAttribute("startTime");
     let endTime = el.getAttribute("endTime");
     let currentVid;
-    allSequenceVidDivs.forEach(function (el2) {
-      if (window.getComputedStyle(el2).display !== "none")
-        currentVid = el2.querySelector(".vid-sequence");
-    });
+    el.closest(".vid-wrapper")
+      .querySelectorAll(".vid-div-sequence")
+      .forEach(function (el2) {
+        if (window.getComputedStyle(el2).display !== "none")
+          currentVid = el2.querySelector(".vid-sequence");
+      });
+    currentVid.parentElement.classList.add("jumping");
     PlayRange(startTime, endTime, currentVid);
   });
 });
 allSequenceVids.forEach(function (el) {
   el.addEventListener("ended", function () {
-    el.closest(".vid-wrapper")
-      .querySelector(".btn-wrapper.sequence")
-      .classList.add("active");
+    el
+      .closest(".vid-wrapper")
+      .querySelector(".pause-btn-wrapper").style.pointerEvents = "none";
   });
 });
 allPauseBtnWrappers.forEach(function (el) {
-  el.addEventListener("click", function () {
+  el.addEventListener("click", function (e) {
+    const clicked = e.target.closest(".pause-btn-wrapper");
+    if (!clicked) return;
+    let startTime;
+    let endTime;
+    let currentVid;
+    el.closest(".vid-wrapper")
+      .querySelectorAll(".btn.sequence")
+      .forEach(function (el) {
+        if (el.classList.contains("current")) {
+          startTime = el.getAttribute("startTime");
+          endTime = el.getAttribute("endTime");
+          currentVid;
+          el.closest(".vid-wrapper")
+            .querySelectorAll(".vid-div-sequence")
+            .forEach(function (el2) {
+              if (window.getComputedStyle(el2).display !== "none")
+                currentVid = el2.querySelector(".vid-sequence");
+            });
+        }
+      });
     el.classList.toggle("off");
-    let currentSequenceVid = [
-      ...el.closest(".vid-wrapper").querySelectorAll(".vid-div-sequence"),
-    ].find((el) => el.classList.contains("active"));
     if (el.classList.contains("off")) {
-      currentSequenceVid.querySelector(".vid-sequence").play();
+      PlayRange(startTime, endTime, currentVid, currentVid.currentTime);
     } else {
-      currentSequenceVid.querySelector(".vid-sequence").pause();
+      currentVid.pause();
     }
   });
 });
 //.......................................................................................
 //SEQUENCE VIDS FUNCTIONS....................................................................
+const ResetAllVids = function (vidWrapper) {
+  vidWrapper.querySelectorAll(".vid-sequence").forEach(function (el) {
+    el.pause();
+    el.currentTime = 0;
+  });
+};
 const ActivateSequenceBtns = function (vidWrapper, localIndex) {
   vidWrapper.querySelectorAll(".btn.sequence").forEach(function (el) {
     el.classList.remove("current");
@@ -524,19 +565,6 @@ const PlaySequence = function (vidWrapper) {
   ].find((el) => el.classList.contains("active"));
   currentSequenceMP.querySelector(".vid-sequence-mp").play();
 };
-const ResetSequence = function (vidWrapper) {
-  vidWrapper.querySelectorAll(".btn.sequence").forEach(function (el) {
-    el.classList.remove("current");
-  });
-  vidWrapper.querySelectorAll(".vid-sequence").forEach(function (el) {
-    el.pause();
-    el.currentTime = 0;
-  });
-  vidWrapper.querySelectorAll(".vid-sequence-mp").forEach(function (el) {
-    el.pause();
-    el.currentTime = 0;
-  });
-};
 //.......................................................................................
 //GLOBAL FUNCTIONS.......................................................................
 const GetLocalIndex = function (el, parentEl, checkClass) {
@@ -550,24 +578,40 @@ const GetLocalIndex = function (el, parentEl, checkClass) {
   });
   return localIndex;
 };
-const PlayRange = function (startTime, endTime, video) {
-  // 1. Define the stop logic
+const PlayRange = function (startTime, endTime, video, videoCurrentTime) {
+  // KILL any previous range-check logic to prevent "double-playing"
+  if (video._currentCheckTime) {
+    video.removeEventListener("timeupdate", video._currentCheckTime);
+  }
   const checkTime = function () {
     if (video.currentTime >= endTime) {
       video.pause();
       video.removeEventListener("timeupdate", checkTime);
+      video._currentCheckTime = null; // Clear the reference
+
+      if (video.parentElement.classList.contains("jumping")) return;
       video.dispatchEvent(new Event("ended"));
     }
   };
-
-  // 2. Add the listener
+  // Store the reference so the NEXT call to PlayRange can find and remove it
+  video._currentCheckTime = checkTime;
   video.addEventListener("timeupdate", checkTime);
-
-  // 3. Move to start, then play only once the move is finished
-  video.currentTime = startTime;
-
-  video.onseeked = function () {
-    video.play();
-    video.onseeked = null; // Clean up the one-time listener
-  };
+  // Set the start time
+  video.currentTime = videoCurrentTime || startTime;
+  // Use { once: true } instead of manual nulling for cleaner code
+  video.addEventListener(
+    "seeked",
+    () => {
+      video.parentElement.classList.remove("jumping");
+      PlayVideo(video);
+    },
+    { once: true },
+  );
 };
+async function PlayVideo(video) {
+  try {
+    await video.play();
+  } catch (err) {
+    console.error("Playback failed or was interrupted:", err);
+  }
+}
