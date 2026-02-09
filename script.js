@@ -1,20 +1,19 @@
 console.log("Template-Documenter-BRANCH: Main...Test-1");
+//.......................................................................................
+//LAZY LOADING VIDS......................................................................
 document.addEventListener("DOMContentLoaded", () => {
   const allLazyVids = document.querySelectorAll(
     ".vid, .vid-state, .vid-data, .vid-features, .vid-sequence",
   );
-
   const observerOptions = {
     root: null,
     rootMargin: "0px",
     threshold: 0.1,
   };
-
   const videoObserver = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
       const video = entry.target;
       const sources = video.querySelectorAll("source");
-
       if (entry.isIntersecting) {
         // --- LOAD LOGIC ---
         sources.forEach((source) => {
@@ -27,9 +26,9 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         });
         video.load();
-        // video.play(); // Optional
       } else {
         // --- UNLOAD LOGIC ---
+        ResetVidWrapper(video.closest(".vid-wrapper"));
         video.pause();
         sources.forEach((source) => {
           // Move src back to data-src and empty the current src
@@ -45,12 +44,44 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   }, observerOptions);
-
   allLazyVids.forEach((vid) => videoObserver.observe(vid));
 });
-
 //.......................................................................................
-//DEFINITIONS............................................................................
+//RESET VIDWRAPPERS AFTER UNLOADING......................................................
+const ResetVidWrapper = function (vidWrapper) {
+  switch (vidWrapper.classList[1]) {
+    case "single":
+      vidWrapper.querySelector(".play-btn-wrapper").classList.remove("off");
+      break;
+    case "two-state":
+      vidWrapper.querySelector(".play-btn-wrapper").classList.remove("off");
+      vidWrapper
+        .querySelector(".play-btn-wrapper")
+        .classList.remove("state-1", "state-2");
+      vidWrapper.querySelector(".play-btn-wrapper").classList.add("state-1");
+      break;
+    case "data":
+      vidWrapper.querySelector(".data-btn-wrapper").classList.add("active");
+      vidWrapper
+        .querySelector(".back-img-text-btn-wrapper")
+        .classList.remove("active");
+      vidWrapper.querySelector(".btn.img-text").textContent = "image";
+      vidWrapper.querySelector(".dimmer").classList.remove("active");
+      DeActivateAllData(vidWrapper);
+      ResetDataScroll(vidWrapper);
+      break;
+    case "features":
+      vidWrapper.querySelector(".features-btn-wrapper").classList.add("active");
+      break;
+    case "sequence":
+      vidWrapper.querySelector(".pause-btn-wrapper").classList.add("off");
+      vidWrapper.querySelector(".pause-btn-wrapper").style.pointerEvents =
+        "none";
+      DeActivateAllSequenceBtns(vidWrapper);
+      break;
+  }
+};
+//.......................................................................................
 //NAV DEFINITIONS........................................................................
 const allChapterWrappers = document.querySelectorAll(".chapter-wrapper");
 const allSubChapterWrappers = document.querySelectorAll(".sub-chapter-wrapper");
@@ -276,7 +307,6 @@ const PlayStateVid = function (playBtn) {
 const allDataBtns = document.querySelectorAll(".btn.data");
 const allDataBackBtns = [...document.querySelectorAll(".btn.back")];
 const allDataImgTextBtns = document.querySelectorAll(".btn.img-text");
-// const allDataVidDivs = [...document.querySelectorAll(".vid-div-data")];
 const allDataVids = [...document.querySelectorAll(".vid-data")];
 //.......................................................................................
 //DATA VIDS EVENTS......................................................................
@@ -331,11 +361,7 @@ allDataBackBtns.forEach(function (el) {
     el.closest(".btn-wrapper")
       .querySelector(".data-btn-wrapper")
       .classList.add("active");
-    el.closest(".vid-wrapper")
-      .querySelectorAll(".data-all-wrapper")
-      .forEach(function (el2) {
-        el2.querySelector(".data-wrapper").scroll(0, 0);
-      });
+    ResetDataScroll(el.closest(".vid-wrapper"));
   });
 });
 allDataImgTextBtns.forEach(function (el) {
@@ -413,6 +439,11 @@ const ActivateData = function (vidWrapper, localIndex) {
 const DeActivateAllData = function (vidWrapper) {
   vidWrapper.querySelectorAll(".data-all-wrapper").forEach(function (el) {
     el.classList.remove("active");
+  });
+};
+const ResetDataScroll = function (vidWrapper) {
+  vidWrapper.querySelectorAll(".data-all-wrapper").forEach(function (el) {
+    el.querySelector(".data-wrapper").scroll(0, 0);
   });
 };
 //.......................................................................................
@@ -521,17 +552,20 @@ allPauseBtnWrappers.forEach(function (el) {
   });
 });
 //.......................................................................................
-//SEQUENCE VIDS FUNCTIONS....................................................................
+//SEQUENCE VIDS FUNCTIONS................................................................
 const ResetAllVids = function (vidWrapper) {
   vidWrapper.querySelectorAll(".vid-sequence").forEach(function (el) {
     el.pause();
     el.currentTime = 0;
   });
 };
-const ActivateSequenceBtns = function (vidWrapper, localIndex) {
+const DeActivateAllSequenceBtns = function (vidWrapper) {
   vidWrapper.querySelectorAll(".btn.sequence").forEach(function (el) {
     el.classList.remove("current");
   });
+};
+const ActivateSequenceBtns = function (vidWrapper, localIndex) {
+  DeActivateAllSequenceBtns(vidWrapper);
   [...vidWrapper.querySelectorAll(".btn.sequence")][localIndex].classList.add(
     "current",
   );
