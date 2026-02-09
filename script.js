@@ -21,18 +21,29 @@ document.addEventListener("DOMContentLoaded", () => {
     entries.forEach((entry) => {
       if (entry.isIntersecting) {
         const video = entry.target;
-        const src = video.getAttribute("data-src");
-        if (src) {
-          // Set the actual src attribute to start loading
-          video.src = src;
-          // Optional: Call load() for <video> elements created dynamically
-          // video.load();
-        }
-        // Stop observing the video once it's loaded
+        const sources = video.querySelectorAll("source");
+
+        // 1. Loop through all <source> tags inside the video
+        sources.forEach((source) => {
+          const dataSrc = source.getAttribute("data-src");
+          if (dataSrc) {
+            source.src = dataSrc;
+            source.removeAttribute("data-src"); // Optional: Clean up
+          }
+        });
+
+        // 2. CRITICAL: You MUST call .load() so the browser registers the new sources
+        video.load();
+
+        // 3. Optional: If you want them to autoplay on scroll, uncomment the next line
+        // video.play();
+
+        // Stop observing after the "swap" is done
         observer.unobserve(video);
       }
     });
   }, observerOptions);
+
   // Start observing all target video elements
   allLazyVids.forEach((vid) => {
     videoObserver.observe(vid);
@@ -550,14 +561,23 @@ const GetLocalIndex = function (el, parentEl, checkClass) {
   return localIndex;
 };
 const PlayRange = function (startTime, endTime, video) {
-  video.addEventListener("timeupdate", function checkTime() {
+  // 1. Define the stop logic
+  const checkTime = function () {
     if (video.currentTime >= endTime) {
       video.pause();
       video.removeEventListener("timeupdate", checkTime);
-      const endedEvent = new Event("ended", function () {});
-      video.dispatchEvent(endedEvent);
+      video.dispatchEvent(new Event("ended"));
     }
-  });
+  };
+
+  // 2. Add the listener
+  video.addEventListener("timeupdate", checkTime);
+
+  // 3. Move to start, then play only once the move is finished
   video.currentTime = startTime;
-  video.play();
+
+  video.onseeked = function () {
+    video.play();
+    video.onseeked = null; // Clean up the one-time listener
+  };
 };
