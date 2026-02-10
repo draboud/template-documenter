@@ -1,4 +1,4 @@
-console.log("Template-Documenter-BRANCH: Main...Test-1");
+console.log("Template-Documenter-BRANCH: Refactoring");
 //.......................................................................................
 //LAZY LOADING VIDS......................................................................
 document.addEventListener("DOMContentLoaded", () => {
@@ -160,7 +160,6 @@ const CloseAllNavDropdowns = function (navMenu) {
 //.......................................................................................
 //INFO DOTS DEFINITIONS..................................................................
 const allDots = [...document.querySelectorAll(".dot")];
-const allDotImgWrappers = document.querySelectorAll(".dots-img-wrapper");
 const allDotDescriptionWrappers = [
   ...document.querySelectorAll(".dot-description-wrapper"),
 ];
@@ -488,7 +487,7 @@ allSequenceBtns.forEach(function (el) {
   el.addEventListener("click", function (e) {
     const clicked = e.target.closest(".btn.sequence");
     if (!clicked) return;
-    ResetAllVids(el.closest(".vid-wrapper"));
+    ResetAllSequenceVids(el.closest(".vid-wrapper"));
     let localIndex = GetLocalIndex(
       el,
       el.closest(".btn-wrapper.sequence"),
@@ -553,7 +552,7 @@ allPauseBtnWrappers.forEach(function (el) {
 });
 //.......................................................................................
 //SEQUENCE VIDS FUNCTIONS................................................................
-const ResetAllVids = function (vidWrapper) {
+const ResetAllSequenceVids = function (vidWrapper) {
   vidWrapper.querySelectorAll(".vid-sequence").forEach(function (el) {
     el.pause();
     el.currentTime = 0;
@@ -571,7 +570,7 @@ const ActivateSequenceBtns = function (vidWrapper, localIndex) {
   );
 };
 const ActivateSequence = function (vidWrapper, localIndex) {
-  DeActivateAllSequence(vidWrapper);
+  DeActivateAllSequenceVids(vidWrapper);
   [...vidWrapper.querySelectorAll(".vid-div-sequence")][
     localIndex
   ].classList.add("active");
@@ -579,7 +578,7 @@ const ActivateSequence = function (vidWrapper, localIndex) {
     localIndex
   ].classList.add("active");
 };
-const DeActivateAllSequence = function (vidWrapper) {
+const DeActivateAllSequenceVids = function (vidWrapper) {
   vidWrapper.querySelectorAll(".vid-div-sequence").forEach(function (el) {
     el.classList.remove("active");
     el.querySelector(".vid-sequence").currentTime = 0;
@@ -648,4 +647,5 @@ async function PlayVideo(video) {
   } catch (err) {
     console.error("Playback failed or was interrupted:", err);
   }
+  return true;
 }
