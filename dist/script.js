@@ -1,6 +1,6 @@
 (() => {
   // script.js
-  console.log("Template-Documenter-BRANCH: Refactoring");
+  console.log("Template-Documenter-BRANCH: Master");
   document.addEventListener("DOMContentLoaded", () => {
     const allLazyVids = document.querySelectorAll(
       ".vid, .vid-state, .vid-data, .vid-features, .vid-sequence"
