@@ -406,7 +406,7 @@
   });
   var ResetVidWrapper = function(vidWrapper) {
     vidWrapper.querySelectorAll(".btn").forEach(function(el) {
-      el.classList.remove("active");
+      el.classList.remove("current");
     });
     switch (vidWrapper.classList[1]) {
       case "single":
