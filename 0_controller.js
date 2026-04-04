@@ -144,10 +144,19 @@ Navbar.allNavBtns.forEach(function (el) {
 });
 Navbar.allNavItemHeaders.forEach(function (el) {
   el.addEventListener("click", function () {
+    const activeDropdown = el
+      .closest(".nav-item-wrapper")
+      .querySelector(".nav-item-dropdown");
+    let isOpen;
+    if (activeDropdown.classList.contains("active")) {
+      isOpen = true;
+    } else {
+      isOpen = false;
+    }
     Navbar.CloseAllNavDropdowns(el.closest(".nav-menu"));
-    el.parentElement
-      .querySelector(".nav-item-dropdown")
-      .classList.add("active");
+    isOpen === true
+      ? activeDropdown.classList.remove("active")
+      : activeDropdown.classList.add("active");
   });
 });
 Navbar.allNavDropdowns.forEach(function (el) {

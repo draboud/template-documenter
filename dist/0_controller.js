@@ -479,8 +479,15 @@
   });
   navbar_default.allNavItemHeaders.forEach(function(el) {
     el.addEventListener("click", function() {
+      const activeDropdown = el.closest(".nav-item-wrapper").querySelector(".nav-item-dropdown");
+      let isOpen;
+      if (activeDropdown.classList.contains("active")) {
+        isOpen = true;
+      } else {
+        isOpen = false;
+      }
       navbar_default.CloseAllNavDropdowns(el.closest(".nav-menu"));
-      el.parentElement.querySelector(".nav-item-dropdown").classList.add("active");
+      isOpen === true ? activeDropdown.classList.remove("active") : activeDropdown.classList.add("active");
     });
   });
   navbar_default.allNavDropdowns.forEach(function(el) {
