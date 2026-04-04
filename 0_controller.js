@@ -57,7 +57,7 @@ document.addEventListener("DOMContentLoaded", () => {
 //RESET VIDS AFTER UNLOADING........................................................
 const ResetVidWrapper = function (vidWrapper) {
   vidWrapper.querySelectorAll(".btn").forEach(function (el) {
-    // el.classList.remove("current");
+    el.classList.remove("current");
     el.style.pointerEvents = "none";
     el.style.pointerEvents = "auto";
   });
