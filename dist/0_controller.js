@@ -405,6 +405,9 @@
     allLazyVids.forEach((vid) => videoObserver.observe(vid));
   });
   var ResetVidWrapper = function(vidWrapper) {
+    vidWrapper.querySelectorAll(".btn").forEach(function(el) {
+      el.classList.remove("active");
+    });
     switch (vidWrapper.classList[1]) {
       case "single":
         vidWrapper.querySelector(".play-btn-wrapper").classList.remove("off");

@@ -56,6 +56,9 @@ document.addEventListener("DOMContentLoaded", () => {
 //..................................................................................
 //RESET VIDS AFTER UNLOADING........................................................
 const ResetVidWrapper = function (vidWrapper) {
+  vidWrapper.querySelectorAll(".btn").forEach(function (el) {
+    el.classList.remove("active");
+  });
   switch (vidWrapper.classList[1]) {
     case "single":
       vidWrapper.querySelector(".play-btn-wrapper").classList.remove("off");
